@@ -4,8 +4,8 @@ from models import User, Vacancy, Skill, UserSkill, VacancySkill, Recommendation
 
 
 # Создание пользователя
-async def create_user(db: AsyncSession, level: str, interests: list):
-    user = User(level=level, interests=interests)
+async def create_user(db: AsyncSession, name: str, email: str, level: str, interests: list):
+    user = User(name=name, email=email, level=level, interests=interests)
     db.add(user)
     await db.commit()
     await db.refresh(user)

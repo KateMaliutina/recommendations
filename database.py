@@ -1,9 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Загружаем переменные окружения (можно вынести в .env)
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost/recommendations")  # todo use envs
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost/recommendations")
 
 # Создаём асинхронный движок для подключения к БД
 engine = create_async_engine(DATABASE_URL, echo=True)

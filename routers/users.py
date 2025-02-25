@@ -9,7 +9,9 @@ router = APIRouter()
 
 
 # Pydantic-модель для валидации
-class UserCreate(BaseModel):  # todo add name and email
+class UserCreate(BaseModel):
+    name: str
+    email: str
     level: str
     interests: List[str]
 
@@ -17,8 +19,7 @@ class UserCreate(BaseModel):  # todo add name and email
 # Эндпоинт для создания пользователя
 @router.post("/users/")
 async def add_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await create_user(db, user.level,
-                             user.interests)  # todo convert list to string or change varchar to []varchar
+    return await create_user(db, user.name, user.email, user.level, user.interests)
 
 
 # Эндпоинт для получения всех пользователей

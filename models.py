@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, ARRAY
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -17,8 +17,10 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False)
     level = Column(String, nullable=False)  # junior/middle/senior
-    interests = Column(String, nullable=True)
+    interests = Column(ARRAY(String), nullable=True)
 
     skills = relationship("UserSkill", back_populates="user")
 
