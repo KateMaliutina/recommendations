@@ -18,6 +18,8 @@ if config.config_file_name is not None:
 from dotenv import load_dotenv
 load_dotenv()
 db_url = os.getenv("DATABASE_URL")
+db_url = db_url.replace('asyncpg', 'psycopg2', 1)
+# db_url = db_url.replace('recommendations-db', 'localhost', 1)
 config.set_main_option('sqlalchemy.url', db_url)
 
 import app.models

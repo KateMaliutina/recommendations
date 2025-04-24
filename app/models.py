@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, ARRAY
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
+# class Base(AsyncAttrs, DeclarativeBase):
+#     pass
 Base = declarative_base()
 
 
@@ -44,7 +47,7 @@ class Vacancy(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    level = Column(String, nullable=False)
+    level = Column(String, nullable=False)  # or grade
 
     skills = relationship("VacancySkill", back_populates="vacancy")
 
