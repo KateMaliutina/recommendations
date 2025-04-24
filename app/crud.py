@@ -1,6 +1,6 @@
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import User, Vacancy, Skill, UserSkill, VacancySkill, Recommendation
+from app.models import User, Vacancy, Skill, UserSkill, VacancySkill, Recommendation
 
 
 # Создание пользователя

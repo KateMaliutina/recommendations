@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
-from crud import create_user, get_users
+from app.database import get_db
+from app.crud import get_users
 from pydantic import BaseModel
 from typing import List
 
-from models import User, UserSkill, Skill
+from app.models import User, UserSkill, Skill
 
 router = APIRouter()
 

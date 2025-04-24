@@ -1,23 +1,19 @@
-import requests
-from sqlalchemy import select, create_engine
-from sqlalchemy.orm import sessionmaker
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from models import Vacancy, VacancySkill, Skill  # Подключаем модели
+import http
 
-# ✅ Настройки API
+import requests
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models import Vacancy, VacancySkill, Skill
+
+# Настройки API
 HH_API_URL = "https://api.hh.ru/vacancies"
 HEADERS = {"User-Agent": "ProCareerParser/1.0"}
-
-# ✅ Настройки базы данных (СИНХРОННОЕ подключение!)
-DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost/recommendations"
-engine = create_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(bind=engine)
 
 
 def fetch_vacancies(params):
     """ Запрос вакансий с API HH """
     response = requests.get(HH_API_URL, headers=HEADERS, params=params)
-    if response.status_code == 200:
+    if response.status_code == http.HTTPStatus.OK:
         return response.json().get("items", [])  # Возвращаем список вакансий
     return []
 
@@ -26,14 +22,13 @@ def fetch_vacancy_details(vacancy_id):
     """ Получение полной информации о вакансии по ID """
     url = f"{HH_API_URL}/{vacancy_id}"
     response = requests.get(url, headers=HEADERS)
-    if response.status_code == 200:
+    if response.status_code == http.HTTPStatus.OK:
         return response.json()
     return None
 
 
-def save_vacancy(vacancy_data):
+def save_vacancy(vacancy_data, db: AsyncSession):
     """ Сохранение вакансии в базу данных с полным описанием """
-    db = SessionLocal()  # Открываем новую сессию
     try:
         vacancy_id = vacancy_data["id"]
 
@@ -50,7 +45,7 @@ def save_vacancy(vacancy_data):
         db.commit()  # Фиксируем сохранение вакансии
         db.refresh(vacancy)  # Обновляем объект, чтобы получить ID
 
-        # ✅ Сохраняем навыки
+        # Сохраняем навыки
         skills = full_vacancy.get("key_skills", [])
         for skill_data in skills:
             skill_name = skill_data["name"].lower()
@@ -73,28 +68,3 @@ def save_vacancy(vacancy_data):
         print(f"Ошибка при сохранении вакансии: {e}")
     finally:
         db.close()  # Закрываем сессию в конце
-
-
-def main():
-    """ Основной процесс парсинга с многопоточностью """
-    params = {
-        "text": "Python разработчик",  # Фильтр по ключевому слову
-        "area": 2,  # ID региона (Москва=1, СПб=2)
-        "per_page": 20,  # Количество вакансий на страницу
-    }
-
-    vacancies = fetch_vacancies(params)
-
-    # ✅ Используем ProcessPoolExecutor для ускорения
-    with ProcessPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(save_vacancy, vacancy): vacancy for vacancy in vacancies}
-
-        for future in as_completed(futures):
-            try:
-                future.result()  # Вызываем, чтобы обработать возможные исключения
-            except Exception as e:
-                print(f"Ошибка при обработке вакансии: {e}")
-
-
-if __name__ == "__main__":
-    main()

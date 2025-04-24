@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import get_db
-from crud import create_skill, get_skills
+from app.database import get_db
+from app.crud import create_skill, get_skills
 from pydantic import BaseModel
 
 router = APIRouter()

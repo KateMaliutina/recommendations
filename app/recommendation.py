@@ -1,7 +1,9 @@
+import http
+
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models import User, Vacancy, UserSkill, VacancySkill, Recommendation
-from collections import Counter
+from app.models import User, Vacancy, UserSkill, VacancySkill, Recommendation
 
 
 async def get_recommendations(user_id: int, db: AsyncSession):
@@ -10,7 +12,7 @@ async def get_recommendations(user_id: int, db: AsyncSession):
     # Получаем данные пользователя
     user = await db.get(User, user_id)
     if not user:
-        return {"error": "User not found"}
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="User not found")
 
     # Получаем навыки пользователя
     user_skills = await db.execute(select(UserSkill).where(UserSkill.user_id == user_id))
@@ -27,13 +29,13 @@ async def get_recommendations(user_id: int, db: AsyncSession):
         vacancy_skills = await db.execute(select(VacancySkill).where(VacancySkill.vacancy_id == vacancy.id))
         vacancy_skills = {vs.skill_id for vs in vacancy_skills.scalars().all()}
 
-        # 1️⃣ Оценка совпадения навыков
+        # 1. Оценка совпадения навыков
         skill_match = sum([user_skills.get(skill, 0) for skill in vacancy_skills])
 
-        # 2️⃣ Оценка соответствия уровня
+        # 2. Оценка соответствия уровня
         level_match = 10 if user.level == vacancy.level else -10
 
-        # 3️⃣ Оценка интересов (по ключевым словам)
+        # 3. Оценка интересов (по ключевым словам)
         interest_match = sum([1 for interest in user.interests if interest.lower() in vacancy.description.lower()])
 
         # Итоговый балл
