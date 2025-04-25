@@ -2,8 +2,8 @@ import http
 
 import requests
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Vacancy, VacancySkill, Skill
+from app.database import SessionLocal
 
 # Настройки API
 HH_API_URL = "https://api.hh.ru/vacancies"
@@ -27,7 +27,8 @@ def fetch_vacancy_details(vacancy_id):
     return None
 
 
-def save_vacancy(vacancy_data, db: AsyncSession):
+def save_vacancy(vacancy_data):
+    db = SessionLocal()
     """ Сохранение вакансии в базу данных с полным описанием """
     try:
         vacancy_id = vacancy_data["id"]

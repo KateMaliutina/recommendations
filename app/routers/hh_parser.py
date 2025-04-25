@@ -13,8 +13,7 @@ router = APIRouter()
 def parse_vacancies(
         text: str = Query(..., description="Ключевое слово для поиска вакансий"),
         area: int = Query(1, description="Регион поиска (Москва=1, СПб=2 и т.д.)"),
-        per_page: int = Query(20, description="Количество вакансий на страницу"),
-        db: AsyncSession = Depends(get_db)
+        per_page: int = Query(20, description="Количество вакансий на страницу")
 ):
     """Запускает парсинг вакансий по заданным параметрам"""
     params = {
@@ -26,15 +25,14 @@ def parse_vacancies(
 
     # Используем ProcessPoolExecutor для ускорения
     with ProcessPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(save_vacancy, vacancy, db): vacancy for vacancy in vacancies}
+        futures = {executor.submit(save_vacancy, vacancy): vacancy for vacancy in vacancies}
 
-        e = HTTPException
         for future in as_completed(futures):
             try:
                 future.result()  # Вызываем, чтобы обработать возможные исключения
             except Exception as e:
                 print(f"Ошибка при обработке вакансии: {e}")
-        if e is not None:  # todo test
-            raise HTTPException(status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR, detail=e)
+                raise HTTPException(status_code=http.HTTPStatus.INTERNAL_SERVER_ERROR, detail=e)
 
     return {"parsed": len(vacancies)}
+# todo get request for getting areas
