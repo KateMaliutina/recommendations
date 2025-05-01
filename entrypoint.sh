@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "Wait PostgreSQL..."
 while ! nc -z recommendations-db 5432; do

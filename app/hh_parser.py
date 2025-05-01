@@ -38,9 +38,9 @@ def save_vacancy(vacancy_data):
         full_description = full_vacancy["description"] if full_vacancy else "Описание недоступно"
 
         vacancy = Vacancy(
-            title=vacancy_data["name"],
+            title=vacancy_data["name"],  # todo handle junior/младший + intern/стажировка/начинающий
             description=full_description,
-            level=vacancy_data.get("experience", {}).get("name", "Не указано"),
+            grade=vacancy_data.get("experience", {}).get("name", "Не указано"),
         )
         db.add(vacancy)
         db.commit()  # Фиксируем сохранение вакансии

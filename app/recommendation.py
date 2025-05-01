@@ -33,13 +33,13 @@ async def get_recommendations(user_id: int, db: AsyncSession):
         skill_match = sum([user_skills.get(skill, 0) for skill in vacancy_skills])
 
         # 2. Оценка соответствия уровня
-        level_match = 10 if user.level == vacancy.level else -10
+        grade_match = 10 if user.grade == vacancy.grade else -10
 
         # 3. Оценка интересов (по ключевым словам)
         interest_match = sum([1 for interest in user.interests if interest.lower() in vacancy.description.lower()])
 
         # Итоговый балл
-        score = skill_match + level_match + interest_match * 5  # Учитываем веса
+        score = skill_match + grade_match + interest_match * 5  # Учитываем веса
 
         recommendations.append({"vacancy_id": vacancy.id, "score": score})
 

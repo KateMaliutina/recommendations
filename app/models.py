@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, ARRAY
-from sqlalchemy.orm import declarative_base, relationship, DeclarativeBase
-from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import declarative_base, relationship
 
-# class Base(AsyncAttrs, DeclarativeBase):
-#     pass
+
 Base = declarative_base()
 
 
@@ -14,15 +12,13 @@ class Skill(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 
-
-# Таблица пользователей
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=True)
     email = Column(String, unique=True, nullable=False)
-    level = Column(String, nullable=False)  # junior/middle/senior
+    grade = Column(String, nullable=True)  # junior/middle/senior
     interests = Column(ARRAY(String), nullable=True)
 
     skills = relationship("UserSkill", back_populates="user")
@@ -47,7 +43,7 @@ class Vacancy(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    level = Column(String, nullable=False)  # or grade
+    grade = Column(String, nullable=False)
 
     skills = relationship("VacancySkill", back_populates="vacancy")
 
