@@ -1,9 +1,7 @@
 import http
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_db
 from app.hh_parser import fetch_vacancies, save_vacancy
 
 router = APIRouter()

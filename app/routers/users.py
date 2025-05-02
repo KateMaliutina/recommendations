@@ -76,7 +76,7 @@ async def add_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
         await db.commit()
 
-    return new_user
+    return {"data": new_user.id}
 
 
 # Эндпоинт для получения всех пользователей

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routers import users, skills, vacancies, hh_parser, recommendations
+from app.routers import users, skills, vacancies, hh_parser, recommendations, roadmap
 
 app = FastAPI()
 
@@ -10,6 +10,7 @@ app.include_router(users.router, tags=["Users"])
 app.include_router(skills.router, tags=["Skills"])
 app.include_router(vacancies.router, tags=["Vacancies"])
 app.include_router(hh_parser.router, tags=["Parser HH.ru"])
+app.include_router(roadmap.router, tags=["Roadmap"])
 
 
 @app.get("/")

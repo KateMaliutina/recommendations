@@ -38,9 +38,11 @@ def save_vacancy(vacancy_data):
         full_description = full_vacancy["description"] if full_vacancy else "Описание недоступно"
 
         vacancy = Vacancy(
-            title=vacancy_data["name"],  # todo handle junior/младший + intern/стажировка/начинающий
+            title=vacancy_data["name"],
             description=full_description,
-            grade=vacancy_data.get("experience", {}).get("name", "Не указано"),
+            grade=fill_grade(vacancy_data["name"].lower()),
+            employer_name=vacancy_data.get("employer", {}).get("name", "Не указано"),
+            url=vacancy_data["alternate_url"],
         )
         db.add(vacancy)
         db.commit()  # Фиксируем сохранение вакансии
@@ -69,3 +71,31 @@ def save_vacancy(vacancy_data):
         print(f"Ошибка при сохранении вакансии: {e}")
     finally:
         db.close()  # Закрываем сессию в конце
+
+
+def fill_grade(init_grade: str) -> str:
+    grade = "Junior"
+
+    if ("junior" in init_grade or
+            "младший" in init_grade or
+            "начинающий" in init_grade):
+        grade = "Junior"
+    elif ("intern" in init_grade or
+          "стажер" in init_grade or
+          "стажировка" in init_grade or
+          "стажирующийся" in init_grade or
+          "стажёр" in init_grade):
+        grade = "Intern"
+    elif ("middle" in init_grade or
+          "специалист" in init_grade or
+          "мидл" in init_grade or
+          "средний" in init_grade):
+        grade = "Middle"
+    elif ("senior" in init_grade or
+          "старший" in init_grade or
+          "ведущий" in init_grade or
+          "синьор" in init_grade or
+          "сеньор" in init_grade):
+        grade = "Senior"
+
+    return grade
