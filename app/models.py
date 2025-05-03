@@ -44,6 +44,8 @@ class Vacancy(Base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     grade = Column(String, nullable=False)
+    employer_name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
 
     skills = relationship("VacancySkill", back_populates="vacancy")
 

@@ -12,12 +12,19 @@ class VacancyCreate(BaseModel):
     title: str
     description: str
     grade: str
+    employer_name: str
+    url: str
 
 
 # Эндпоинт для создания вакансии
 @router.post("/vacancies/")
 async def add_vacancy(vacancy: VacancyCreate, db: AsyncSession = Depends(get_db)):
-    return await create_vacancy(db, vacancy.title, vacancy.description, vacancy.grade)
+    return await create_vacancy(db,
+                                vacancy.title,
+                                vacancy.description,
+                                vacancy.grade,
+                                vacancy.employer_name,
+                                vacancy.url)
 
 
 # Эндпоинт для получения всех вакансий

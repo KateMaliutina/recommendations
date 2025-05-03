@@ -42,8 +42,12 @@ async def add_user_skill(db: AsyncSession, user_id: int, skill_id: int, proficie
 
 
 # Создание вакансии
-async def create_vacancy(db: AsyncSession, title: str, description: str, grade: str):
-    vacancy = Vacancy(title=title, description=description, grade=grade)
+async def create_vacancy(db: AsyncSession, title: str, description: str, grade: str, employer_name: str, url: str):
+    vacancy = Vacancy(title=title,
+                      description=description,
+                      grade=grade,
+                      employer_name=employer_name,
+                      url=url)
     db.add(vacancy)
     await db.commit()
     await db.refresh(vacancy)
