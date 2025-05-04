@@ -20,7 +20,7 @@ async def get_user_roadmap(user_id: int, db: AsyncSession = Depends(get_db)):
 
     if user.specialization is None or user.specialization == "":
         raise HTTPException(status_code=409, detail="User doesn't have specialization")
-    if user.grade is None or user.grade == "":
+    if user.grade is None or user.grade == "": # todo hardcode junior
         raise HTTPException(status_code=409, detail="User doesn't have grade")
     specialization = user.specialization
     grade = user.grade
