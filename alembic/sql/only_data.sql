@@ -1,4 +1,3 @@
-
 COPY public.roadmap_nodes (id, roadmap_id, skill_id, parent_id, is_optional) FROM stdin;
 1	7	53	\N	f
 2	7	54	1	f

@@ -1,4 +1,3 @@
-
 COPY public.roadmap_nodes (id, roadmap_id, skill_id, parent_id, is_optional) FROM stdin;
 1	7	53	\N	f
 2	7	54	1	f
@@ -509,54 +508,6 @@ COPY public.skills (id, name) FROM stdin;
 225	build.gradle.kts
 226	settings.gradle.kts
 \.
-
-
---
--- Data for Name: user_roadmap_nodes; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.user_roadmap_nodes (id, user_id, roadmap_node_id, status) FROM stdin;
-\.
-
-
---
--- Data for Name: user_skills; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.user_skills (user_id, skill_id, proficiency_level) FROM stdin;
-\.
-
-
---
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.users (id, name, email, interests, grade) FROM stdin;
-\.
-
-
---
--- Data for Name: vacancies; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.vacancies (id, title, description, grade, employer_name, url) FROM stdin;
-\.
-
-
---
--- Data for Name: vacancy_skills; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.vacancy_skills (vacancy_id, skill_id) FROM stdin;
-\.
-
-
---
--- Name: recommendations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.recommendations_id_seq', 1, false);
-
 
 --
 -- Name: roadmap_nodes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
