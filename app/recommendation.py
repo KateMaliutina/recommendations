@@ -12,7 +12,7 @@ async def get_recommendations(user_id: int, db: AsyncSession):
     # Получаем данные пользователя
     user = await db.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="User not found")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Пользователь не найден")
 
     # Получаем навыки пользователя
     user_skills = await db.execute(select(UserSkill).where(UserSkill.user_id == user_id))

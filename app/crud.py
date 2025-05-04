@@ -4,8 +4,8 @@ from app.models import User, Vacancy, Skill, UserSkill, VacancySkill, Recommenda
 
 
 # Создание пользователя
-async def create_user(db: AsyncSession, name: str, email: str, grade: str, interests: list):
-    user = User(name=name, email=email, grade=grade, interests=interests)
+async def create_user(db: AsyncSession, name: str, email: str, grade: str, interests: list, specialization: str):
+    user = User(name=name, email=email, grade=grade, interests=interests, specialization=specialization)
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -16,6 +16,11 @@ async def create_user(db: AsyncSession, name: str, email: str, grade: str, inter
 async def get_users(db: AsyncSession):
     result = await db.execute(select(User))
     return result.scalars().all()
+
+
+# Получение пользователя
+async def get_one_user(db: AsyncSession, user_id: int):
+    return await db.get(User, user_id)
 
 
 # Добавление навыка
@@ -54,10 +59,15 @@ async def create_vacancy(db: AsyncSession, title: str, description: str, grade: 
     return vacancy
 
 
-# Получение пользователей
+# Получение вакансий
 async def get_vacancies(db: AsyncSession):
     result = await db.execute(select(Vacancy))
     return result.scalars().all()
+
+
+# Получение вакансии
+async def get_one_vacancy(db: AsyncSession, vacancy_id: int):
+    return await db.get(Vacancy, vacancy_id)
 
 
 # Привязка навыка к вакансии

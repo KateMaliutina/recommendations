@@ -20,7 +20,8 @@ class User(Base):
     name = Column(String, nullable=True)
     email = Column(String, unique=True, nullable=False)
     grade = Column(String, nullable=True)  # junior/middle/senior
-    interests = Column(ARRAY(String), nullable=True) # todo add specialization
+    interests = Column(ARRAY(String), nullable=True)
+    specialization = Column(String, nullable=True)
 
     skills = relationship("UserSkill", back_populates="user")
 

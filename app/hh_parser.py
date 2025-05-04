@@ -1,5 +1,5 @@
 import http
-
+import re
 import requests
 from sqlalchemy import select
 from app.models import Vacancy, VacancySkill, Skill
@@ -8,6 +8,13 @@ from app.database import SessionLocal
 # Настройки API
 HH_API_URL = "https://api.hh.ru/vacancies"
 HEADERS = {"User-Agent": "ProCareerParser/1.0"}
+
+CLEANR = re.compile('<.*?>')
+
+
+def cleanhtml(raw_html: str) -> str:
+    cleantext = re.sub(CLEANR, '', raw_html)
+    return cleantext
 
 
 def fetch_vacancies(params):
@@ -35,7 +42,7 @@ def save_vacancy(vacancy_data):
 
         # Получаем полное описание вакансии
         full_vacancy = fetch_vacancy_details(vacancy_id)
-        full_description = full_vacancy["description"] if full_vacancy else "Описание недоступно"
+        full_description = cleanhtml(full_vacancy["description"] if full_vacancy else "Описание недоступно").strip()
 
         vacancy = Vacancy(
             title=vacancy_data["name"],

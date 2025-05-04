@@ -9,16 +9,19 @@ router = APIRouter()
 
 @router.post("/parse-hh-vacancies")
 def parse_vacancies(
-        text: str = Query(..., description="Ключевое слово для поиска вакансий"),
-        area: int = Query(1, description="Регион поиска (Москва=1, СПб=2 и т.д.)"),
+        text: str = Query(..., description="Ключевые слова для поиска вакансий"),
+        # area: int = Query(1, description="Регион поиска (Москва=1, СПб=2 и т.д.)"),
         per_page: int = Query(20, description="Количество вакансий на страницу")
 ):
     """Запускает парсинг вакансий по заданным параметрам"""
-    params = {
-        "text": text,
-        "area": area,
-        "per_page": per_page
-    }
+    params = [
+        ("text", text),
+        ("area", 1),  # Москва
+        ("area", 2),  # Санкт-Петербург
+        ("area", 3),  # Екатеринбург
+        ("area", 4),  # Новосибирск
+        ("per_page", per_page)
+    ]
     vacancies = fetch_vacancies(params)
 
     # Используем ProcessPoolExecutor для ускорения

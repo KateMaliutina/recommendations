@@ -1,9 +1,11 @@
+import http
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.crud import get_users
+from app.crud import get_users, get_one_user, create_user, create_skill
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -22,6 +24,7 @@ class UserCreate(BaseModel):
     email: str
     name: Optional[str] = None
     grade: Optional[str] = None
+    specialization: Optional[str] = None
     interests: Optional[List[str]] = None
     skills: Optional[List[SkillCreate]] = None  # Список навыков пользователя
 
@@ -30,6 +33,7 @@ class UserUpdate(BaseModel):
     email: str
     name: Optional[str] = None
     grade: Optional[str] = None
+    specialization: Optional[str] = None
     interests: Optional[List[str]] = None
     skills: Optional[List[SkillCreate]] = None
 
@@ -39,17 +43,17 @@ class UserUpdate(BaseModel):
 async def add_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     """
     Создание пользователя с возможностью частичного заполнения профиля.
+
     Обязателен только email.
     """
-    new_user = User(
+    new_user = await create_user(
+        db=db,
         name=user.name,
         email=user.email,
         grade=user.grade,
-        interests=user.interests
+        interests=user.interests,
+        specialization=user.specialization
     )
-    db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
 
     # Обработка навыков, если они переданы
     if user.skills:
@@ -79,10 +83,20 @@ async def add_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return {"data": new_user.id}
 
 
-# Эндпоинт для получения всех пользователей
 @router.get("/users/")
 async def list_users(db: AsyncSession = Depends(get_db)):
+    """Получение всех пользователей"""
     return await get_users(db)
+
+
+@router.get("/users/{user_id}")
+async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    """Получения пользователя по id"""
+    user = await get_one_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Пользователь не найден")
+
+    return user
 
 
 @router.put("/users/{user_id}")
@@ -90,7 +104,7 @@ async def update_user(user_id: int, user: UserUpdate, db: AsyncSession = Depends
     """Обновление информации о пользователе и его навыках (частично)"""
     existing_user = await db.get(User, user_id)
     if not existing_user:
-        raise HTTPException(status_code=404, detail="Пользователь не найден")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Пользователь не найден")
 
     # Обновляем только переданные поля
     existing_user.email = user.email  # обязателен
@@ -100,6 +114,8 @@ async def update_user(user_id: int, user: UserUpdate, db: AsyncSession = Depends
         existing_user.grade = user.grade
     if user.interests is not None:
         existing_user.interests = user.interests
+    if user.specialization is not None:
+        existing_user.specialization = user.specialization
 
     if user.skills is not None:
         # Удаляем старые навыки
@@ -113,10 +129,7 @@ async def update_user(user_id: int, user: UserUpdate, db: AsyncSession = Depends
             result = await db.execute(select(Skill).where(Skill.name == skill_name))
             skill = result.scalar_one_or_none()
             if not skill:
-                skill = Skill(name=skill_name)
-                db.add(skill)
-                await db.commit()
-                await db.refresh(skill)
+                skill = await create_skill(db, skill_name)
 
             user_skill = UserSkill(user_id=user_id, skill_id=skill.id, proficiency_level=proficiency_level)
             db.add(user_skill)
@@ -131,7 +144,7 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
     """Удаление пользователя и его навыков"""
     user = await db.get(User, user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="Пользователь не найден")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Пользователь не найден")
 
     # Удаляем связанные UserSkill
     await db.execute(delete(UserSkill).where(UserSkill.user_id == user_id))

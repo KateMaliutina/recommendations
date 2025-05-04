@@ -1,3 +1,5 @@
+import http
+
 import sqlalchemy
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,14 +18,13 @@ async def get_user_roadmap(user_id: int, db: AsyncSession = Depends(get_db)):
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Пользователь не найден")
 
     if user.specialization is None or user.specialization == "":
-        raise HTTPException(status_code=409, detail="User doesn't have specialization")
-    if user.grade is None or user.grade == "": # todo hardcode junior
-        raise HTTPException(status_code=409, detail="User doesn't have grade")
+        raise HTTPException(status_code=http.HTTPStatus.CONFLICT, detail="У пользователя не заполнена специализация")
+
     specialization = user.specialization
-    grade = user.grade
+    grade = "intern"
 
     # 2. Найти roadmap
     roadmap_result = await db.execute(
@@ -34,13 +35,14 @@ async def get_user_roadmap(user_id: int, db: AsyncSession = Depends(get_db)):
     )
     roadmap = roadmap_result.scalar_one_or_none()
     if not roadmap:
-        raise HTTPException(status_code=404, detail="Roadmap not found for user specialization and grade")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND,
+                            detail="Роадмап не найден для данной специализации и грейда")
 
     # 3. Получить все roadmap_nodes (связанные с roadmap)
     nodes_result = await db.execute(
         select(RoadmapNode).where(RoadmapNode.roadmap_id == roadmap.id).options(
             # загружаем skill в одну выборку
-            sqlalchemy.orm.selectinload(RoadmapNode.skill)  # todo test
+            sqlalchemy.orm.selectinload(RoadmapNode.skill)
         )
     )
     nodes = nodes_result.scalars().all()
@@ -56,6 +58,7 @@ async def get_user_roadmap(user_id: int, db: AsyncSession = Depends(get_db)):
         roadmap_skills.append({
             "node_id": node.id,
             "skill_id": node.skill.id,
+            "parent_id": node.parent_id,
             "skill_name": node.skill.name,
             "status": status
         })
@@ -84,13 +87,13 @@ async def update_node_status(user_id: int, update: UpdateNodeStatusRequest, db: 
     user_result = await db.execute(select(User).where(User.id == user_id))
     user = user_result.scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Пользователь не найден")
 
     # Проверим node существует ли
     node_result = await db.execute(select(RoadmapNode).where(RoadmapNode.id == update.node_id))
     node = node_result.scalar_one_or_none()
     if not node:
-        raise HTTPException(status_code=404, detail="Roadmap node not found")
+        raise HTTPException(status_code=http.HTTPStatus.NOT_FOUND, detail="Навык роадмапа не найден")
 
     # Проверим, есть ли запись в user_roadmap_nodes
     user_node_result = await db.execute(
@@ -112,4 +115,4 @@ async def update_node_status(user_id: int, update: UpdateNodeStatusRequest, db: 
         db.add(user_node)
 
     await db.commit()
-    return {"message": "Status updated", "node_id": node.id, "status": update.status}
+    return {"message": "Статус навыка обновлен", "node_id": node.id, "status": update.status}
