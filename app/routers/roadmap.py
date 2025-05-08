@@ -60,7 +60,8 @@ async def get_user_roadmap(user_id: int, db: AsyncSession = Depends(get_db)):
             "skill_id": node.skill.id,
             "parent_id": node.parent_id,
             "skill_name": node.skill.name,
-            "status": status
+            "status": status,
+            "is_optional": node.is_optional
         })
 
     return {
