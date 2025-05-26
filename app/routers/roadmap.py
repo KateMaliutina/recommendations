@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 from pydantic import BaseModel
 from enum import Enum
 from app.database import get_db
-from app.models import User, Roadmap, RoadmapNode, UserRoadmapNode, SkillStatus
+from app.models import User, Roadmap, RoadmapNode, UserRoadmapNode, SkillStatus, UserSkill
 
 router = APIRouter()
 
@@ -65,8 +65,8 @@ async def get_user_roadmap(user_id: int, db: AsyncSession = Depends(get_db)):
         })
 
     return {
-        "specialization": specialization,
-        "grade": grade,
+        "specialization": specialization.capitalize(),
+        "grade": grade.capitalize(),
         "skills": roadmap_skills
     }
 
@@ -115,8 +115,42 @@ async def update_node_status(user_id: int, update: UpdateNodeStatusRequest, db: 
         )
         db.add(user_node)
 
+    # Определяем числовое значение прогресса для user_skill
+    if update.status == SkillStatusUpdate.not_started:
+        proficiency = 0
+    elif update.status == SkillStatusUpdate.in_progress:
+        proficiency = 50
+    elif update.status == SkillStatusUpdate.learned:
+        proficiency = 100
+    else:
+        proficiency = 0  # fallback на случай непредвиденного статуса
+
+    # Обновляем или создаём запись в user_skill
+    user_skill_result = await db.execute(
+        select(UserSkill).where(
+            UserSkill.user_id == user.id,
+            UserSkill.skill_id == node.skill_id
+        )
+    )
+    user_skill = user_skill_result.scalar_one_or_none()
+    if user_skill:
+        user_skill.proficiency_level = proficiency
+    else:
+        new_user_skill = UserSkill(
+            user_id=user.id,
+            skill_id=node.skill_id,
+            proficiency_level=proficiency
+        )
+        db.add(new_user_skill)
+
     await db.commit()
-    return {"message": "Статус навыка обновлен", "node_id": node.id, "status": update.status}
+
+    return {
+        "message": "Статус навыка обновлен и прогресс в user_skill обновлён",
+        "node_id": node.id,
+        "status": update.status,
+        "proficiency": proficiency
+    }
 
 
 @router.post("/users/{user_id}/generate-dynamic-roadmap")
