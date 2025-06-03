@@ -80,7 +80,7 @@ class Roadmap(Base):
     id = Column(Integer, primary_key=True, index=True)
     specialization = Column(String, nullable=False)  # например frontend, backend
     grade = Column(String, nullable=False)  # intern, junior...
-    is_dynamic = Column(Boolean, default=False, nullable=False)  # Новый признак автогенерируемости
+    is_dynamic = Column(Boolean, default=False, nullable=True)  # Новый признак автогенерируемости
     __table_args__ = (
         UniqueConstraint('specialization', 'grade', 'is_dynamic', name='_specialization_grade_dynamic_uc'),
     )
