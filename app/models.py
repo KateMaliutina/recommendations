@@ -43,6 +43,7 @@ class Vacancy(Base):
     __tablename__ = "vacancies"
 
     id = Column(Integer, primary_key=True, index=True)
+    hh_id = Column(String, unique=True, nullable=False)  # Внешний ID от HeadHunter
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     grade = Column(String, nullable=False)

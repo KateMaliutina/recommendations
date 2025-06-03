@@ -38,13 +38,20 @@ def save_vacancy(vacancy_data):
     db = SessionLocal()
     """ Сохранение вакансии в базу данных с полным описанием """
     try:
+        hh_id = str(vacancy_data["id"])
+        # Проверяем, есть ли такая вакансия в базе
+        existing = db.execute(select(Vacancy).where(Vacancy.hh_id == hh_id)).scalar_one_or_none()
+        if existing:
+            print(f"Вакансия с hh_id={hh_id} уже существует — пропуск.")
+            return  # Пропускаем сохранение
         vacancy_id = vacancy_data["id"]
 
         # Получаем полное описание вакансии
-        full_vacancy = fetch_vacancy_details(vacancy_id)
+        full_vacancy = fetch_vacancy_details(hh_id)
         full_description = cleanhtml(full_vacancy["description"] if full_vacancy else "Описание недоступно").strip()
 
         vacancy = Vacancy(
+            hh_id=hh_id,
             title=vacancy_data["name"],
             description=full_description,
             grade=fill_grade(vacancy_data["name"].lower()),
